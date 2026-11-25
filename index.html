@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARMOR-HAL: Unified Defense for Adversarial Robustness and Hallucination Mitigation in LVLMs</title>
+  <meta name="description" content="ARMOR-HAL is an NSF NAIRR Pilot project on training-free, phase-aware defenses that make large vision-language models robust to jailbreaks while reducing hallucination. Outcomes: HALS (NeurIPS 2026) and Trajectory-Lens (EMNLP 2026).">
+  <meta property="og:title" content="ARMOR-HAL · NSF NAIRR Pilot project">
+  <meta property="og:description" content="Unified, training-free defense for jailbreak robustness and hallucination mitigation in large vision-language models.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7z' fill='%2316181d'/%3E%3Cpath d='M16 2v28c6.9-1.6 12-7.5 12-15V7z' fill='%230a8f86'/%3E%3Cpath d='M4 7v8c0 7.5 5.1 13.4 12 15V2z' fill='%23c4512f'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css?v=4">
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<header class="topbar" id="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="ARMOR-HAL, back to top">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 7v8c0 7.5 5.1 13.4 12 15V2z" fill="var(--t1)"/><path d="M16 2v28c6.9-1.6 12-7.5 12-15V7z" fill="var(--t2)"/></svg>
+      ARMOR-HAL
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#insight">Insight</a>
+      <a href="#thrusts">Thrusts</a>
+      <a href="#outcomes">Outcomes</a>
+      <a href="#results">Results</a>
+      <a href="#compute">Compute</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#team">Team</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<!-- ============ HERO ============ -->
+<section class="hero" style="border:0">
+  <div class="wrap">
+    <div class="badges">
+      <span class="badge solid">NSF NAIRR Pilot Project</span>
+      <a class="badge" href="#outcomes"><span class="dot"></span>2 publications · NeurIPS 2026 · EMNLP 2026</a>
+      <span class="badge">Training-free · Inference-time</span>
+    </div>
+    <p class="eyebrow">Trustworthy multimodal AI</p>
+    <h1><span class="a">ARMOR</span><span class="hy">-</span><span class="h">HAL</span></h1>
+    <p class="sub">A unified defense for <em>adversarial robustness</em> and <em>hallucination mitigation</em> in large vision-language models.</p>
+    <p class="lede">Today's LVLM defenses treat jailbreaks and hallucinations as separate problems, and fixing one routinely worsens the other. ARMOR-HAL starts from a simple observation: the two failures live at <b>different moments of decoding</b>. Building on this observation, ARMOR-HAL applies a targeted intervention at the decoding stage associated with each failure mode, enabling it to mitigate both jailbreaks and hallucinations at inference time without retraining the underlying model.</p>
+    <div class="people">
+      <a href="https://aimteaj.github.io/" target="_blank" rel="noopener">Ahmed Imteaj <sup>PI</sup></a>
+    </div>
+    <p class="affil"><a href="https://speedlab.network/" target="_blank" rel="noopener" style="color:inherit">SPEED Lab</a> · Department of Electrical Engineering &amp; Computer Science · Florida Atlantic University</p>
+    <div class="cta">
+      <a class="btn primary" href="#outcomes">Project outcomes</a>
+      <a class="btn" href="https://speedlab-git.github.io/HALS-Website/" target="_blank" rel="noopener">HALS <span class="v">NeurIPS ’26</span></a>
+      <a class="btn" href="https://aclanthology.org/2026.emnlp-main.2468/" target="_blank" rel="noopener">Trajectory-Lens <span class="v">EMNLP ’26</span></a>
+      <a class="btn" href="https://github.com/speedlab-git/Armor-Hal" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>
+        Code
+      </a>
+    </div>
+
+    <!-- Interactive decoding timeline -->
+    <div class="card demo reveal" id="demo">
+      <div class="demo-top">
+        <div>
+          <span class="kicker">The core idea</span>
+          <h3>Two failure modes, two moments in the decode. Switch each defense on and watch where it acts.</h3>
+        </div>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="Scenario">
+            <button type="button" data-scn="jb" aria-pressed="true">Jailbreak attempt</button>
+            <button type="button" data-scn="hal" aria-pressed="false">Hallucination probe</button>
+          </div>
+        </div>
+      </div>
+      <div class="controls" style="margin:10px 0 6px">
+        <label class="toggle t1"><input type="checkbox" id="tgT1"><span class="sw"></span>Thrust I · safety firewall</label>
+        <label class="toggle t2"><input type="checkbox" id="tgT2"><span class="sw"></span>Thrust II · cross-modal stabilizer</label>
+        <button type="button" class="linkbtn" id="replay">Replay ↻</button>
+      </div>
+      <svg class="timeline-svg" id="tlSvg" viewBox="0 0 1000 250" role="img" aria-label="Conceptual risk over output token position: jailbreak susceptibility is concentrated in the first tokens, hallucination risk grows in mid and late decoding."></svg>
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw-line" style="border-color:var(--t1)"></i>Jailbreak susceptibility</span>
+        <span><i class="sw-line" style="border-color:var(--t2)"></i>Hallucination risk</span>
+        <span><i class="sw-dash" style="border-color:var(--ink-3)"></i>Undefended model</span>
+        <span><i class="sw-box" style="background:var(--t1-soft)"></i>Thrust I window</span>
+        <span><i class="sw-box" style="background:var(--t2-soft)"></i>Thrust II window</span>
+      </div>
+      <div class="stream">
+        <div class="stream-label">Input</div>
+        <div class="prompt" id="prompt"></div>
+        <div class="stream-label">Model output</div>
+        <div>
+          <div class="tokens" id="tokens" aria-live="polite"></div>
+          <div class="verdict" id="verdict"></div>
+        </div>
+      </div>
+      <p class="note" style="margin:14px 0 0">Conceptual illustration of the phase-aware design (curves are schematic, outputs are illustrative). Measured results are in <a href="#results">Results</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INSIGHT ============ -->
+<section id="insight">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">01</span>
+      <h2>Why one defense has never been enough</h2>
+      <p>The project set out to remove a trade-off that existing LVLM defenses accept as given.</p>
+    </div>
+    <div class="insight">
+      <blockquote class="reveal">
+        Jailbreak exploits take hold in the <b class="c1">first few output tokens</b>. Hallucinations surface in <b class="c2">mid- and late-phase decoding</b>. A defense that respects that timing doesn’t have to trade one for the other.
+      </blockquote>
+      <div class="problems">
+        <div class="card problem reveal">
+          <div class="ic" style="background:var(--t1-soft);color:var(--t1)">JB</div>
+          <div><h4>Shallow safety alignment</h4><p>Token-level alignment leaves LVLMs open to adversarial images, suffix manipulations and universal perturbations. Adversarial training helps, at a high per-model cost.</p></div>
+        </div>
+        <div class="card problem reveal">
+          <div class="ic" style="background:var(--t2-soft);color:var(--t2)">HL</div>
+          <div><h4>Robustness that costs grounding</h4><p>In our HALS study (NeurIPS 2026), we found that LVLMs with adversarially robust vision encoders hallucinate more frequently than those with standard encoders. We trace this increase to visual token homogenization.</p></div>
+        </div>
+        <div class="card problem reveal">
+          <div class="ic" style="background:var(--bg-2);color:var(--ink)">?!</div>
+          <div><h4>Knowing when the model is wrong</h4><p>A deployed defense also needs a cheap signal of failure. Trajectory-Lens (EMNLP 2026) reads it from the model’s own forward pass, in 4.6 ms.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THRUSTS ============ -->
+<section id="thrusts">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">02</span>
+      <h2>Two thrusts, one inference-time pipeline</h2>
+      <p>Both thrusts precompute small steering directions once, then apply them only when and where they are needed. No model weights change.</p>
+    </div>
+
+    <div class="thrust one">
+      <div class="reveal">
+        <span class="thrust-tag">Thrust I · early tokens</span>
+        <h3>Adaptive activation steering for jailbreak robustness</h3>
+        <p>A phase-aware safety firewall. ARMOR-HAL contrasts hidden states on benign and adversarially perturbed inputs to extract lightweight <b>harmful directions</b>, then watches for them during the first tokens of a response.</p>
+        <ol class="steps">
+          <li><span><b>Calibrate once.</b> Derive harmful activation directions from a small calibration set; reuse them across prompts.</span></li>
+          <li><span><b>Gate by projection.</b> At inference, project activations onto the harmful direction. Below the threshold, do nothing, so benign prompts stay untouched.</span></li>
+          <li><span><b>Steer early.</b> Above it, remove the harmful component, mainly in the first output tokens where adversarial intent takes hold.</span></li>
+        </ol>
+      </div>
+      <div class="card lab reveal">
+        <div class="lab-head"><span class="kicker">Try it · projection gate</span><span class="note">schematic</span></div>
+        <svg id="gateSvg" viewBox="0 0 460 300" role="img" aria-label="Activation vector, harmful direction and the steering gate"></svg>
+        <div class="slider">
+          <label for="advSlider">Adversarial pressure on the input</label><output id="advOut">0.20</output>
+          <input type="range" id="advSlider" min="0" max="1" step="0.01" value="0.2" style="--fill:var(--t1)">
+        </div>
+        <div class="slider">
+          <label for="tauSlider">Gate threshold τ</label><output id="tauOut">0.45</output>
+          <input type="range" id="tauSlider" min="0.15" max="0.85" step="0.01" value="0.45" style="--fill:var(--ink-3)">
+        </div>
+        <dl class="readout">
+          <div><dt>Projection ⟨h, v⟩</dt><dd id="projOut">0.00</dd></div>
+          <div><dt>Gate</dt><dd id="gateOut">closed</dd></div>
+          <div><dt>Steered tokens</dt><dd id="steerOut">none</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="thrust two">
+      <div class="card lab reveal">
+        <div class="lab-head"><span class="kicker">Try it · adaptive coefficient</span><span class="note">schematic</span></div>
+        <svg id="stabSvg" viewBox="0 0 460 260" role="img" aria-label="Attention to vision across decoding and the adaptive stabilization strength"></svg>
+        <div class="slider">
+          <label for="lamSlider">Base strength λ₀</label><output id="lamOut">0.60</output>
+          <input type="range" id="lamSlider" min="0" max="1" step="0.01" value="0.6" style="--fill:var(--t2)">
+        </div>
+        <div class="slider">
+          <label for="aSlider">Grounding target a*</label><output id="aOut">0.50</output>
+          <input type="range" id="aSlider" min="0.2" max="0.8" step="0.01" value="0.5" style="--fill:var(--ink-3)">
+        </div>
+        <dl class="readout">
+          <div><dt>Tokens steered</dt><dd id="nSteer">0</dd></div>
+          <div><dt>Peak λ(t)</dt><dd id="peakLam">0.00</dd></div>
+          <div><dt>First 8 tokens</dt><dd>untouched</dd></div>
+        </dl>
+      </div>
+      <div class="reveal">
+        <span class="thrust-tag">Thrust II · mid &amp; late tokens</span>
+        <h3>Cross-modal stabilization for hallucination mitigation</h3>
+        <p>Safety mechanisms tend to weaken grounding. Thrust II anchors later tokens to the evidence with two stabilization directions, and scales them with how much the model is still looking at the image.</p>
+        <ol class="steps">
+          <li><span><b>Visual stability direction.</b> Average encoder features across perturbed views of the same image to keep the signal that survives.</span></li>
+          <li><span><b>Textual anti-hallucination direction.</b> Contrast grounded and hallucinated generations to isolate the latent shift tied to ungrounded content.</span></li>
+          <li><span><b>Adaptive scheduling.</b> Raise the coefficient when attention to vision drops or attention-sink tokens dominate; ease off when grounding is healthy, so answers stay informative.</span></li>
+        </ol>
+        <p style="margin-top:16px">This thrust became <a href="#outcomes">HALS</a>: homogenization-aware latent steering that restores grounding in robust LVLMs without touching the robust encoder.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OUTCOMES ============ -->
+<section id="outcomes">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">03</span>
+      <h2>Outcomes supported by NAIRR</h2>
+      <p>Compute from the NAIRR Pilot made two top-tier publications possible, each answering one of the questions ARMOR-HAL raised.</p>
+    </div>
+    <div class="outcomes">
+      <article class="card paper reveal">
+        <div class="media">
+          <video muted loop playsinline preload="none" poster="assets/teasers/hals.jpg" data-src="assets/teasers/HALS_NeurIPS2026_teaser.mp4" aria-label="HALS teaser animation"></video>
+          <span class="venue"><span class="star">★</span>NeurIPS 2026 · Main Track</span>
+          <span class="maps" style="background:var(--t2)">Thrust II</span>
+        </div>
+        <div class="body">
+          <p class="name">HALS</p>
+          <h3>Do Robust LVLMs Hallucinate More? Uncovering Robustness-Induced Hallucination in Large Vision-Language Models</h3>
+          <p class="au"><b>Md Zarif Hossain</b>, Awal Ahmed Fime, Ahmed Imteaj</p>
+          <p class="sum">Adversarially robust vision encoders raise inter-token similarity by up to 38%, so the decoder falls back on language priors. Homogenization-Aware Latent Steering (HALS) steers decoder hidden states back toward grounded output, training-free and with the robust encoder untouched.</p>
+          <dl class="stats">
+            <div><dt>−31.3</dt><dd>CHAIR<sub>S</sub> points (avg.)</dd></div>
+            <div><dt>−30.6%</dt><dd>AMBER hallucination</dd></div>
+            <div><dt>±0.0</dt><dd>robustness cost</dd></div>
+          </dl>
+          <div class="links">
+            <a class="btn primary" href="https://speedlab-git.github.io/HALS-Website/" target="_blank" rel="noopener">Project page ↗</a>
+          </div>
+        </div>
+      </article>
+      <article class="card paper reveal">
+        <div class="media">
+          <video muted loop playsinline preload="none" poster="assets/teasers/trajectory-lens.jpg" data-src="assets/teasers/TrajectoryLens_EMNLP2026_teaser.mp4" aria-label="Trajectory-Lens teaser animation"></video>
+          <span class="venue"><span class="star">★</span>EMNLP 2026 · Main Track</span>
+          <span class="maps" style="background:var(--accent);color:var(--bg)">Reliability signal</span>
+        </div>
+        <div class="body">
+          <p class="name">TRAJECTORY-LENS</p>
+          <h3>Do LVLMs Know When They Are Wrong? Trajectory-Based Correctness Estimation from a Single Forward Pass</h3>
+          <p class="au">Awal Ahmed Fime, <b>Md Zarif Hossain</b>, Ahmed Imteaj</p>
+          <p class="sum">Correctness lives in the trajectory, not in any single layer. Trajectory-Lens follows vision-encoder, projection and language-decoder signals across depth and fuses them into one score that flags wrong answers, from the answer’s own forward pass.</p>
+          <dl class="stats">
+            <div><dt>+16.44</dt><dd>AUROC (Qwen3-VL-2B, VizWiz)</dd></div>
+            <div><dt>4.6 ms</dt><dd>per sample</dd></div>
+            <div><dt>500</dt><dd>labels to calibrate</dd></div>
+          </dl>
+          <div class="links">
+            <a class="btn primary" href="https://speedlab-git.github.io/Trajectory-Lens/" target="_blank" rel="noopener">Project page ↗</a>
+            <a class="btn" href="https://aclanthology.org/2026.emnlp-main.2468.pdf" target="_blank" rel="noopener">Paper (PDF)</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section id="results">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">04</span>
+      <h2>Results</h2>
+      <p>Headline numbers from the two papers. Hover any bar for exact values, or switch to the table view.</p>
+    </div>
+
+    <dl class="big-stats reveal">
+      <div><dt>+38%</dt><dd>inter-token similarity in robust encoders<span class="src">HALS</span></dd></div>
+      <div><dt>−31.3</dt><dd>CHAIR<sub>S</sub> points on average<span class="src">HALS</span></dd></div>
+      <div><dt>+2.6</dt><dd>POPE accuracy points<span class="src">HALS</span></dd></div>
+      <div><dt>10.2</dt><dd>tokens/s, fastest mitigation compared<span class="src">HALS</span></dd></div>
+      <div><dt>+15.61</dt><dd>AUPR, LLaVA-Next-7B on ScienceQA<span class="src">Trajectory-Lens</span></dd></div>
+      <div><dt>≈13.5 min</dt><dd>one-time calibration per task<span class="src">Trajectory-Lens</span></dd></div>
+    </dl>
+
+    <div class="card chart-card reveal" id="halsCard">
+      <div class="chart-head">
+        <div>
+          <span class="kicker">HALS · LLaVA-v1.5 &amp; ShareGPT4V</span>
+          <h3 id="halsTitle">Hallucination drops on every robust encoder</h3>
+          <p id="halsDesc"></p>
+        </div>
+        <div class="chart-tools">
+          <select class="select" id="halsMetric" aria-label="Metric">
+            <option value="chair">CHAIR_S ↓ (LLaVA-v1.5)</option>
+            <option value="pope">POPE accuracy ↑ (LLaVA-v1.5)</option>
+            <option value="amber">AMBER Hal ↓ (LLaVA-v1.5)</option>
+            <option value="mmhal">MMHal-Bench score ↑ (ShareGPT4V)</option>
+            <option value="mme">MME score ↑ (ShareGPT4V)</option>
+          </select>
+          <button type="button" class="linkbtn" data-table-toggle="hals">Table view</button>
+        </div>
+      </div>
+      <div class="legend" style="margin:6px 0 4px">
+        <span><i class="sw-box" style="background:var(--base)"></i>Baseline (robust encoder)</span>
+        <span><i class="sw-box" style="background:var(--t2)"></i>+ HALS</span>
+      </div>
+      <div class="chart" id="halsChart"></div>
+      <div class="table-wrap" id="halsTable" hidden></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card chart-card reveal" style="margin:0">
+        <div class="chart-head"><div>
+          <span class="kicker">HALS · robustness preserved</span>
+          <h3>Grounding comes back, robustness stays</h3>
+          <p>COCO CIDEr and OKVQA accuracy under APGD (ε = 4/255), LLaVA-v1.5.</p>
+        </div></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Encoder</th><th>COCO clean</th><th>COCO robust</th><th>OKVQA clean</th><th>OKVQA robust</th></tr></thead>
+            <tbody>
+              <tr><td>TeCoA</td><td>115.6</td><td>79.5</td><td>44.4</td><td>20.5</td></tr>
+              <tr class="ours"><td>+ HALS</td><td>116.3<span class="up">+0.7</span></td><td>79.5<span class="dn">±0.0</span></td><td>44.4<span class="dn">±0.0</span></td><td>20.3<span class="dn">−0.2</span></td></tr>
+              <tr><td>FARE</td><td>123.5</td><td>86.4</td><td>46.4</td><td>22.1</td></tr>
+              <tr class="ours"><td>+ HALS</td><td>123.4<span class="dn">−0.1</span></td><td>87.2<span class="up">+0.8</span></td><td>46.5<span class="up">+0.1</span></td><td>22.1<span class="dn">±0.0</span></td></tr>
+              <tr><td>SLADE</td><td>124.0</td><td>94.6</td><td>48.4</td><td>23.4</td></tr>
+              <tr class="ours"><td>+ HALS</td><td>125.2<span class="up">+1.2</span></td><td>94.0<span class="dn">−0.6</span></td><td>48.4<span class="dn">±0.0</span></td><td>23.4<span class="dn">±0.0</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card chart-card reveal" style="margin:0">
+        <div class="chart-head"><div>
+          <span class="kicker">HALS · beyond CLIP</span>
+          <h3>Generalizes to test-time defenses</h3>
+          <p>MiniGPT-4 (non-CLIP) under transformation defenses, HALS vs. VTI.</p>
+        </div></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Defense</th><th>Method</th><th>CHAIR<sub>S</sub> ↓</th><th>CHAIR<sub>I</sub> ↓</th><th>POPE ↑</th><th>F1 ↑</th></tr></thead>
+            <tbody>
+              <tr><td>None</td><td>—</td><td>36.8</td><td>14.5</td><td>76.8</td><td>76.3</td></tr>
+              <tr><td>TTC</td><td>VTI</td><td>38.1</td><td>15.5</td><td>75.9</td><td>74.7</td></tr>
+              <tr class="ours"><td>TTC</td><td>HALS</td><td class="best">28.2</td><td class="best">14.7</td><td>75.5</td><td class="best">75.8</td></tr>
+              <tr><td>AOM</td><td>VTI</td><td>37.4</td><td>14.7</td><td>76.4</td><td>74.9</td></tr>
+              <tr class="ours"><td>AOM</td><td>HALS</td><td class="best">31.6</td><td class="best">14.0</td><td>76.4</td><td class="best">75.3</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card chart-card reveal" id="tlCard" style="margin-top:22px">
+      <div class="chart-head">
+        <div>
+          <span class="kicker">Trajectory-Lens · LLaVA-Next-7B · AUROC (%)</span>
+          <h3>Flagging wrong answers across eight benchmarks</h3>
+          <p>Compare Trajectory-Lens against any baseline. It leads on 7 of 8 benchmarks against the strongest competitor, using a single forward pass.</p>
+        </div>
+        <div class="chart-tools">
+          <label class="note" for="tlBase">vs.</label>
+          <select class="select" id="tlBase" aria-label="Baseline method"></select>
+          <button type="button" class="linkbtn" data-table-toggle="tl">Table view</button>
+        </div>
+      </div>
+      <div class="legend" style="margin:6px 0 4px">
+        <span><i class="sw-box" style="background:var(--base)"></i><span id="tlBaseName">Baseline</span></span>
+        <span><i class="sw-box" style="background:var(--t2)"></i>Trajectory-Lens (ours)</span>
+      </div>
+      <div class="chart" id="tlChart"></div>
+      <div class="table-wrap" id="tlTable" hidden></div>
+      <div class="chart-foot"><span>† multi-pass · * uses vision and text. Full AUPR/F1 and eight more LVLMs in the paper.</span><span id="tlWins"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPUTE ============ -->
+<section id="compute">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">05</span>
+      <h2>NAIRR compute plan</h2>
+      <p>Every inference and attack-generation job is independent, so the workload parallelizes across GPUs and nodes with no inter-GPU communication. Figures below are the allocation plan from the proposal, in A100-equivalent GPU-hours.</p>
+    </div>
+    <div class="compute">
+      <div class="res-tiles">
+        <dl class="card tile reveal"><dt>GPU allocation</dt><dd>10,000<small>A100 GPU-hours</small></dd><p>Run on NAIRR-supported Purdue Anvil AI resources (project NAIRR250393).</p></dl>
+        <dl class="card tile reveal"><dt>Storage</dt><dd>4<small>TB high-performance</small></dd>
+          <div class="storage" aria-label="Storage breakdown">
+            <div style="flex:1;background:var(--accent);color:var(--bg)" title="Datasets &amp; cached features · 1 TB">1</div>
+            <div style="flex:1;background:var(--t1)" title="Adversarial examples &amp; stabilized outputs · 1 TB">1</div>
+            <div style="flex:1.5;background:var(--t2)" title="Evaluation logs &amp; metrics · 1–1.5 TB">1–1.5</div>
+            <div style="flex:.5;background:var(--ink-3)" title="Containers, checkpoints, reproducibility · 0.5 TB">.5</div>
+          </div>
+          <p>Datasets · adversarial examples · eval logs · containers &amp; checkpoints</p>
+        </dl>
+        <dl class="card tile reveal"><dt>Cost basis</dt><dd>1.3–1.5×<small>A100 vs A6000</small></dd><p>Scaled from SLADE runs: ~0.7 h per ImgJP image, ~1.05 h per VisualAdv image, ~3 min per inference.</p></dl>
+      </div>
+      <div class="card chart-card reveal" style="margin:0">
+        <div class="chart-head"><div>
+          <span class="kicker">GPU-hours by experiment stage</span>
+          <h3>Most compute goes to proving utility is preserved</h3>
+          <p>Utility checks on VisIT-Bench, ScienceQA, COCO and Flickr30k are the single largest line: a defense is only useful if the model still works.</p>
+        </div></div>
+        <div class="hbars" id="hbars"></div>
+        <div style="margin-top:22px">
+          <span class="kicker">Models</span>
+          <div class="chips" style="margin:8px 0 16px">
+            <span class="chip">OpenFlamingo-9B</span><span class="chip">LLaVA-13B</span><span class="chip">MiniGPT-4</span><span class="chip">InstructBLIP</span><span class="chip">LLaVA-v1.5 / Next</span><span class="chip">ShareGPT4V</span><span class="chip">Qwen3-VL</span><span class="chip">InternVL2</span>
+          </div>
+          <span class="kicker">Benchmarks</span>
+          <div class="chips" style="margin-top:8px">
+            <span class="chip t1">AdvBench</span><span class="chip t1">RealToxicityPrompts</span><span class="chip t1">ImgJP</span><span class="chip t1">VisualAdv</span>
+            <span class="chip t2">CHAIR</span><span class="chip t2">POPE</span><span class="chip t2">AMBER</span><span class="chip t2">MMHal-Bench</span><span class="chip t2">HallusionBench</span>
+            <span class="chip">MME</span><span class="chip">VisIT-Bench</span><span class="chip">ScienceQA</span><span class="chip">COCO</span><span class="chip">Flickr30k</span><span class="chip">OKVQA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<section id="timeline">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">06</span>
+      <h2>Twelve months, three phases</h2>
+      <p>Select a phase to see what it covered and what it produced, as documented in the project’s NAIRR progress updates.</p>
+    </div>
+    <div class="phases reveal" role="tablist" aria-label="Project phases">
+      <button class="phase" role="tab" aria-selected="false" data-phase="0">
+        <div class="bar-seg"><i></i></div>
+        <span class="m">Months 1–3</span><h4>Setup, baselines &amp; first prototypes</h4><span class="st">✓ Complete</span>
+      </button>
+      <button class="phase" role="tab" aria-selected="false" data-phase="1">
+        <div class="bar-seg"><i></i></div>
+        <span class="m">Months 4–9</span><h4>Robustness–hallucination study &amp; HALS</h4><span class="st">✓ Complete</span>
+      </button>
+      <button class="phase" role="tab" aria-selected="true" data-phase="2">
+        <div class="bar-seg"><i style="--done:92%"></i></div>
+        <span class="m">Months 10–12</span><h4>Adaptive integration &amp; dissemination</h4><span class="st"><span class="dot"></span>Wrapping up</span>
+      </button>
+    </div>
+    <div class="card phase-detail reveal" id="phaseDetail" role="tabpanel" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ============ TEAM ============ -->
+<section id="team">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">07</span>
+      <h2>Team</h2>
+      <p>SPEED Lab, Florida Atlantic University.</p>
+    </div>
+    <div class="team">
+      <a class="card person reveal" href="https://aimteaj.github.io/" target="_blank" rel="noopener">
+        <div class="avatar" style="background:var(--accent);color:var(--bg)">AI</div>
+        <div><h4>Ahmed Imteaj</h4><p>Principal Investigator · Assistant Professor, EECS · I-SENSE Fellow</p></div>
+      </a>
+      <a class="card person reveal" href="https://zarifhossain.net" target="_blank" rel="noopener">
+        <div class="avatar" style="background:var(--t1)">MZ</div>
+        <div><h4>Md Zarif Hossain</h4><p>Ph.D. student · EECS, FAU</p></div>
+      </a>
+      <div class="card person reveal">
+        <div class="avatar" style="background:var(--t2)">AF</div>
+        <div><h4>Awal Ahmed Fime</h4><p>Ph.D. student · EECS, FAU</p></div>
+      </div>
+    </div>
+    <div class="prior reveal">
+      <span class="kicker">Built on our prior work</span>
+      <div class="prior-list">
+        <a class="card" href="https://github.com/speedlab-git/SLADE" target="_blank" rel="noopener"><b>SLADE</b> · CVPR 2025<span>Shielding against dual exploits in LVLMs: a unified robust encoder.</span></a>
+        <a class="card" href="https://arxiv.org/abs/2407.14971" target="_blank" rel="noopener"><b>Sim-CLIP</b> · IJCNN 2026<span>Unsupervised Siamese adversarial fine-tuning for robust, semantically rich VLMs.</span></a>
+        <a class="card" href="https://zarifhossain.net/publications.html" target="_blank" rel="noopener"><b>Sim-CLIP++</b> · IEEE BigData 2024<span>A robust encoder securing VLMs against jailbreak and adversarial attacks.</span></a>
+      </div>
+    </div>
+
+    <div class="card ack reveal" style="margin-top:36px">
+      <p><b style="color:var(--ink)">Acknowledgement.</b> This work was supported by computational resources provided through the U.S. National Science Foundation’s <b style="color:var(--ink)">National Artificial Intelligence Research Resource (NAIRR) Pilot</b> (project NAIRR250393). Any opinions, findings, and conclusions expressed here are those of the authors and do not necessarily reflect the views of NSF.</p>
+      <div class="logos">
+        <img src="assets/img/nairr-web.webp" alt="NAIRR Pilot">
+        <img src="assets/img/lab_logo.png" alt="SPEED Lab">
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>ARMOR-HAL · SPEED Lab, Florida Atlantic University · 2026</span>
+    <a href="#top">Back to top ↑</a>
+  </div>
+</footer>
+
+<div class="tip" id="tip" role="tooltip"></div>
+<script src="assets/js/main.js?v=4"></script>
+</body>
+</html>
