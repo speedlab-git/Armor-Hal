@@ -483,27 +483,64 @@
   /* =====================================================================
      5. Compute breakdown (proposal Table 1)
      ===================================================================== */
-  var COMPUTE = [
-    ['Utility preservation', 'VisIT-Bench, ScienceQA, COCO, Flickr30k', 4500, ''],
-    ['Thrust II experiments', 'HallusionBench, POPE (open-ended)', 1500, 't2'],
-    ['Ablation & trade-off studies', 'Subsets of all of the above', 1200, ''],
-    ['Thrust I experiments', 'AdvBench (25), RealToxicityPrompts (100)', 1100, 't1'],
-    ['Thrust II implementation', 'HallusionBench / POPE calibration', 700, 't2'],
-    ['Thrust I implementation', 'Calibration sets across 4 LVLMs', 500, 't1'],
-    ['Reproducibility & overhead', 'Replication, failed/preempted jobs', 500, '']
-  ];
+  /* Approximate split of the 5,000 NAIRR GPU-hours (rounded estimates). */
+  var COMPUTE = {
+    hals: {
+      title: 'HALS · ~3,000 GPU-hours',
+      desc: 'Hallucination benchmarks across four robust encoders took the largest share, followed by the APGD robustness checks.',
+      rows: [
+        ['Hallucination benchmarks', 'CHAIR, POPE, AMBER, MMHal-Bench, MME', 1300, 't2'],
+        ['Robustness experiments', 'APGD (ε = 4/255) on TeCoA, FARE, SLADE, TGA-ZSR', 900, 't1'],
+        ['Utility preservation', 'COCO captioning (CIDEr), OKVQA, clean accuracy', 400, ''],
+        ['Ablations & baselines', 'Steering strength λ, budget ε, decoding; VCD, OPERA, VTI…', 400, 'mut']
+      ],
+      models: ['LLaVA-v1.5', 'LLaVA-Next', 'ShareGPT4V', 'MiniGPT-4', 'CLIP', 'TeCoA', 'FARE', 'SLADE', 'TGA-ZSR'],
+      bench: [['CHAIR', 't2'], ['POPE', 't2'], ['AMBER', 't2'], ['MMHal-Bench', 't2'], ['MME', 't2'], ['APGD attack', 't1'], ['COCO', ''], ['OKVQA', '']]
+    },
+    tl: {
+      title: 'Trajectory-Lens · ~2,000 GPU-hours',
+      desc: 'Most compute went to extracting layer-wise trajectories from nine LVLMs; re-running multi-pass baselines was the next largest cost.',
+      rows: [
+        ['Trajectory extraction', 'Vision encoder, projection & decoder signals, 9 LVLMs × 8 benchmarks', 1100, ''],
+        ['Baseline comparisons', 'Self-consistency, semantic uncertainty, probing and calibration methods', 500, 'mut'],
+        ['Calibration & ablations', 'α, β, γ fitting (500 labels), descriptor and depth ablations', 250, 't2'],
+        ['Reproducibility & overhead', 'Multi-seed reruns, failed/preempted jobs', 150, 'mut']
+      ],
+      models: ['LLaVA-Next-7B / 13B', 'Qwen3-VL-2B / 4B', 'InstructBLIP-XL / XXL', 'InternVL2-4B / 8B', 'ShareGPT4V'],
+      bench: [['ScienceQA', ''], ['InfoVQA', ''], ['ChartQA', ''], ['TextVQA', ''], ['DocVQA', ''], ['OCRBench', ''], ['MME', ''], ['VizWiz', '']]
+    }
+  };
   var hb = $('#hbars');
-  COMPUTE.forEach(function (r) {
-    var row = document.createElement('div');
-    row.className = 'hbar-row';
-    row.innerHTML = '<div class="n">' + r[0] + '<small>' + r[1] + '</small></div>' +
-      '<div class="hbar-track"><div class="hbar-fill ' + r[3] + '" data-w="' + (r[2] / 4500 * 100) + '"></div></div>' +
-      '<div class="v">' + r[2].toLocaleString() + '</div>';
-    hb.appendChild(row);
-  });
+  var CMP_MAX = 1300;
+  var cmpShown = false;
+  function growBars() {
+    $$('.hbar-fill', hb).forEach(function (f, i) {
+      setTimeout(function () { f.style.width = f.dataset.w + '%'; }, reduceMotion ? 0 : 40 + i * 70);
+    });
+  }
+  function drawCompute(key) {
+    var c = COMPUTE[key];
+    $('#cmpTitle').textContent = c.title;
+    $('#cmpDesc').textContent = c.desc;
+    hb.innerHTML = '';
+    c.rows.forEach(function (r) {
+      var row = document.createElement('div');
+      row.className = 'hbar-row';
+      row.innerHTML = '<div class="n">' + r[0] + '<small>' + r[1] + '</small></div>' +
+        '<div class="hbar-track"><div class="hbar-fill ' + r[3] + '" data-w="' + (r[2] / CMP_MAX * 100) + '"></div></div>' +
+        '<div class="v">~' + r[2].toLocaleString() + '</div>';
+      hb.appendChild(row);
+    });
+    $('#cmpModels').innerHTML = c.models.map(function (m) { return '<span class="chip">' + m + '</span>'; }).join('');
+    $('#cmpBench').innerHTML = c.bench.map(function (b) { return '<span class="chip ' + b[1] + '">' + b[0] + '</span>'; }).join('');
+    $$('[data-cmp]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.cmp === key)); });
+    if (cmpShown) growBars();
+  }
+  $$('[data-cmp]').forEach(function (b) { b.addEventListener('click', function () { drawCompute(b.dataset.cmp); }); });
+  drawCompute('hals');
   var hbObs = new IntersectionObserver(function (es) {
     if (!es[0].isIntersecting) return;
-    $$('.hbar-fill', hb).forEach(function (f, i) { setTimeout(function () { f.style.width = f.dataset.w + '%'; }, reduceMotion ? 0 : i * 70); });
+    cmpShown = true; growBars();
     hbObs.disconnect();
   }, { threshold: 0.3 });
   hbObs.observe(hb);

@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=4">
+  <link rel="stylesheet" href="assets/css/style.css?v=5">
 </head>
 <body>
 <div class="progress" id="progress"></div>
@@ -376,41 +376,39 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="sec-num">05</span>
-      <h2>NAIRR compute plan</h2>
-      <p>Every inference and attack-generation job is independent, so the workload parallelizes across GPUs and nodes with no inter-GPU communication. Figures below are the allocation plan from the proposal, in A100-equivalent GPU-hours.</p>
+      <h2>NAIRR compute usage</h2>
+      <p>Approximate breakdown of the 5,000 GPU-hours awarded through the NAIRR Pilot, by publication and by experiment type. Figures are rounded estimates, not exact accounting.</p>
     </div>
     <div class="compute">
       <div class="res-tiles">
-        <dl class="card tile reveal"><dt>GPU allocation</dt><dd>10,000<small>A100 GPU-hours</small></dd><p>Run on NAIRR-supported Purdue Anvil AI resources (project NAIRR250393).</p></dl>
-        <dl class="card tile reveal"><dt>Storage</dt><dd>4<small>TB high-performance</small></dd>
-          <div class="storage" aria-label="Storage breakdown">
-            <div style="flex:1;background:var(--accent);color:var(--bg)" title="Datasets &amp; cached features · 1 TB">1</div>
-            <div style="flex:1;background:var(--t1)" title="Adversarial examples &amp; stabilized outputs · 1 TB">1</div>
-            <div style="flex:1.5;background:var(--t2)" title="Evaluation logs &amp; metrics · 1–1.5 TB">1–1.5</div>
-            <div style="flex:.5;background:var(--ink-3)" title="Containers, checkpoints, reproducibility · 0.5 TB">.5</div>
+        <dl class="card tile reveal"><dt>GPU allocation</dt><dd>5,000<small>GPU-hours</small></dd><p>Awarded through the NAIRR Pilot on Purdue Anvil AI (project NAIRR250393).</p></dl>
+        <dl class="card tile reveal"><dt>Split by publication (approx.)</dt>
+          <div class="storage split" aria-label="Approximate GPU-hour split: HALS about 3,000, Trajectory-Lens about 2,000">
+            <div style="flex:3;background:var(--t2)" title="HALS · ~3,000 GPU-hours">HALS ~3,000</div>
+            <div style="flex:2;background:var(--accent)" title="Trajectory-Lens · ~2,000 GPU-hours">T-Lens ~2,000</div>
           </div>
-          <p>Datasets · adversarial examples · eval logs · containers &amp; checkpoints</p>
+          <p>HALS ran attack and hallucination evaluations on four robust encoders; Trajectory-Lens scored nine LVLMs across eight benchmarks.</p>
         </dl>
-        <dl class="card tile reveal"><dt>Cost basis</dt><dd>1.3–1.5×<small>A100 vs A6000</small></dd><p>Scaled from SLADE runs: ~0.7 h per ImgJP image, ~1.05 h per VisualAdv image, ~3 min per inference.</p></dl>
+        <dl class="card tile reveal"><dt>Why NAIRR mattered</dt><dd>Multi-seed<small>at scale</small></dd><p>The allocation made multi-model, multi-seed evaluations and ablations possible that our local resources could not cover alone.</p></dl>
       </div>
       <div class="card chart-card reveal" style="margin:0">
-        <div class="chart-head"><div>
-          <span class="kicker">GPU-hours by experiment stage</span>
-          <h3>Most compute goes to proving utility is preserved</h3>
-          <p>Utility checks on VisIT-Bench, ScienceQA, COCO and Flickr30k are the single largest line: a defense is only useful if the model still works.</p>
-        </div></div>
+        <div class="chart-head">
+          <div>
+            <span class="kicker">Approx. GPU-hours by experiment type</span>
+            <h3 id="cmpTitle"></h3>
+            <p id="cmpDesc"></p>
+          </div>
+          <div class="seg" role="group" aria-label="Publication">
+            <button type="button" data-cmp="hals" aria-pressed="true">HALS</button>
+            <button type="button" data-cmp="tl" aria-pressed="false">Trajectory-Lens</button>
+          </div>
+        </div>
         <div class="hbars" id="hbars"></div>
         <div style="margin-top:22px">
           <span class="kicker">Models</span>
-          <div class="chips" style="margin:8px 0 16px">
-            <span class="chip">OpenFlamingo-9B</span><span class="chip">LLaVA-13B</span><span class="chip">MiniGPT-4</span><span class="chip">InstructBLIP</span><span class="chip">LLaVA-v1.5 / Next</span><span class="chip">ShareGPT4V</span><span class="chip">Qwen3-VL</span><span class="chip">InternVL2</span>
-          </div>
+          <div class="chips" id="cmpModels" style="margin:8px 0 16px"></div>
           <span class="kicker">Benchmarks</span>
-          <div class="chips" style="margin-top:8px">
-            <span class="chip t1">AdvBench</span><span class="chip t1">RealToxicityPrompts</span><span class="chip t1">ImgJP</span><span class="chip t1">VisualAdv</span>
-            <span class="chip t2">CHAIR</span><span class="chip t2">POPE</span><span class="chip t2">AMBER</span><span class="chip t2">MMHal-Bench</span><span class="chip t2">HallusionBench</span>
-            <span class="chip">MME</span><span class="chip">VisIT-Bench</span><span class="chip">ScienceQA</span><span class="chip">COCO</span><span class="chip">Flickr30k</span><span class="chip">OKVQA</span>
-          </div>
+          <div class="chips" id="cmpBench" style="margin-top:8px"></div>
         </div>
       </div>
     </div>
@@ -494,6 +492,6 @@
 </footer>
 
 <div class="tip" id="tip" role="tooltip"></div>
-<script src="assets/js/main.js?v=4"></script>
+<script src="assets/js/main.js?v=5"></script>
 </body>
 </html>

@@ -286,6 +286,9 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 .hbar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0; background: var(--accent); width: 0; transition: width 1s cubic-bezier(.2,.8,.2,1), opacity .2s; }
 .hbar-fill.t1 { background: var(--t1); }
 .hbar-fill.t2 { background: var(--t2); }
+.hbar-fill.mut { background: var(--ink-3); }
+.storage.split { height: 34px; margin: 14px 0 10px; }
+.storage.split div { font-size: 12px; padding: 0 6px; }
 .hbar-row .v { font: 600 13.5px var(--mono); text-align: right; }
 .hbars:hover .hbar-row:not(:hover) .hbar-fill { opacity: .35; }
 .storage { display: flex; height: 30px; gap: 2px; margin: 12px 0 10px; }
